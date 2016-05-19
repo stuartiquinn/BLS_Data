@@ -1,24 +1,12 @@
----
-title: 'BLS Data Analysis'
-date: "`r format(Sys.time(), '%d %B, %Y')`"
-output:
-  html_document:
-    theme: spacelab
-    highlight: tango
-    toc: yes
-    toc_depth: 3
-  pdf_document:
-    toc: yes
-    toc_depth: 2
----    
+# BLS Data Analysis
 
 The [Bureau of Labor Statistics (BLS)](www.bls.gov) hosts a huge repository of survey data that has been captured over a long-period of time to compare trends across a number of sectors and geographies. The Bureau has built a number of tools around this data to make the information widely available and successful, though at times the documentation can be more limited within these tools. This post is inspired by some scripts authored by [Ben Casselman](https://github.com/BenCasselman) of [FiveThirtyEight](fivethirtyeight.com) who covers economic trends. Since his scripts focus largely on national employment data conducted in the Community Population Survey (CPS), while this will focus on the Local Area Unemployment Statistics. The data will come from the public [LABSTAT database](http://download.bls.gov/pub/time.series/overview.txt). 
 
 ###Install Packages
 
 First we will install the prerequesite packages
-```{r, packages, echo = T, eval = T, message = F, warning = F}
 
+```r
 if(!require(stringr)){
   install.packages("stringr")
   library(stringr)
@@ -46,7 +34,8 @@ if(!require(reshape2)){
 ###Download The First File
 First we will download the WA local area file
 
-```{r, downloadFirst, echo=T, message = F, warning = F, cache = T}
+
+```r
 #Create temporary file
 temp <- tempfile()
 #download census time-series data from bls -- WA State in this case
@@ -59,10 +48,10 @@ dfUEWA <-read.table(temp,
                      strip.white=TRUE)
 
 unlink(temp) #remove/unlink temp table to preserve memory
-
 ```
 
-```{r, colHeaders, echo = T, eval = T, message = F, warning = F, cache = T}
+
+```r
 ######################All other downloads remain the same for Local Area Employment Figures
 temp <- tempfile()
 dfUEHeaders <- download.file("http://download.bls.gov/pub/time.series/la/la.series", temp)
@@ -76,7 +65,6 @@ unlink(temp)
 
 #Merge data
 df_UE_WA <- merge(dfUEWA, dfUEHeaders, by = "series_id")
-
 ```
 
 ###Download Mapped Descriptors
@@ -88,7 +76,8 @@ We will download and merge the following files together. This step is not necess
 * Measurement Mapping
 
 #####Download Area Code Mapping and Merge
-```{r, areaCode, echo = T, eval = T, warning = F, message = F, cache = T}
+
+```r
 #la.area				-  Area code (mapping file)
 temp <- tempfile()
 dfUEArea <- download.file("http://download.bls.gov/pub/time.series/la/la.area", temp)
@@ -104,12 +93,11 @@ colnames(dfUEArea) <- c("area_type_code",	"area_code",	"area_text",	"display_lev
 
 #Merge area and employment figures
 df_UE_WA1 <- merge(df_UE_WA, dfUEArea, by = "area_code", all.x = T)
-
-
 ```
 
 ######Download Area Type Codes and Merge
-```{r, areaType, echo = T, eval = T, warning = F, message = F}
+
+```r
 #################
 #la.area.type			-  Area type codes (mapping file)
 ################
@@ -125,11 +113,11 @@ dfUEArea2 <- read.table(temp,
 unlink(temp)
 colnames(dfUEArea2) <- c("area_type_code", "areatype_text")
 df_UE_WA2 <- merge(df_UE_WA1, dfUEArea2, by.x = "area_type_code.x", by.y = "area_type_code", all.x = T)
-
 ```
 
 #####Download Measurement Codes and Merge
-```{r, measureCode, echo = T, eval = T, warning = F, message = F}
+
+```r
 ##########
 #la.measure			-  Measure codes (mapping file)
 ##########
@@ -148,15 +136,14 @@ unlink(temp)
 df_UE_WA2$measure_code <- str_pad(df_UE_WA2$measure_code, 2, pad = "0")
 
 df_UE_WA3 <- merge(df_UE_WA2, dfMeasure, by = "measure_code", all.x = T)
-
-
 ```
 
 ###Basic Data Cleaning to Full Set
 
 There is some minor data cleaning required to ensure the fields are in the proper data types. 
 
-```{r, dataCleanup, echo = T, eval = T, message = F, warning = F}
+
+```r
 #############################################
 #Take only the measures needed from full combined set
 ############################################
@@ -187,13 +174,12 @@ df_UE_Combined$value <- as.numeric(as.character(df_UE_Combined$value))
 #the main title of the plot
 
 df_UE_Combined$series_title <- gsub("^[^:]+:\\s*", "", df_UE_Combined$series_title)
-
 ```
 
 Then take subsets of datasets so they fit properly in our post!
 
-```{r, dataCleanup2, echo = T, eval = T, warning = F, message = F}
 
+```r
 #################
 #Create manageable graphical df's
 ################
@@ -255,7 +241,6 @@ countyRecentPerSub1 <- countyRecentPer %>%
 
 countyRecentPerSub2 <- countyRecentPer %>%
   filter(series_title %in% title[21:39])
-
 ```
 
 ###Let's Make a Plot!
@@ -263,9 +248,8 @@ countyRecentPerSub2 <- countyRecentPer %>%
 We will gather our data with dplyr and then plot with ggplot2.
 
 ###Unemployment Rate by WA County
-```{r, waPlot, echo = T, eval = T, warning = F, message = F, fig.align = "center", fig.height = 10, fig.width = 10}
 
-
+```r
 ggplot(countyRateSub1, aes(x = date, y = value))+
   geom_line()+
   facet_wrap(~series_title)+
@@ -281,8 +265,11 @@ ggplot(countyRateSub1, aes(x = date, y = value))+
         strip.text.x = element_text(face = "bold"),
         plot.title = element_text(color = "red")
         )
+```
 
+<img src="BLS_Analysis_files/figure-html/waPlot-1.png" title="" alt="" style="display: block; margin: auto;" />
 
+```r
 ggplot(countyRateSub2, aes(x = date, y = value))+
   geom_line()+
   facet_wrap(~series_title)+
@@ -299,5 +286,10 @@ ggplot(countyRateSub2, aes(x = date, y = value))+
         strip.text.x = element_text(face = "bold"),
         plot.title = element_text(color = "red")
         )
+```
 
+<img src="BLS_Analysis_files/figure-html/waPlot-2.png" title="" alt="" style="display: block; margin: auto;" />
+
+```r
 #listCountyRate<-split(countyRate, countyRate$series_title)
+```
