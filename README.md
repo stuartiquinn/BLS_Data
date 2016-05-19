@@ -301,4 +301,3 @@ ggplot(countyRateSub2, aes(x = date, y = value))+
         )
 
 #listCountyRate<-split(countyRate, countyRate$series_title)
-
