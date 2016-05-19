@@ -267,7 +267,7 @@ ggplot(countyRateSub1, aes(x = date, y = value))+
         )
 ```
 
-<img src="BLS_Analysis_files/figure-html/waPlot-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figure/waPlot-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 ```r
 ggplot(countyRateSub2, aes(x = date, y = value))+
@@ -288,7 +288,7 @@ ggplot(countyRateSub2, aes(x = date, y = value))+
         )
 ```
 
-<img src="BLS_Analysis_files/figure-html/waPlot-2.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figure/waPlot-2.png" title="" alt="" style="display: block; margin: auto;" />
 
 ```r
 #listCountyRate<-split(countyRate, countyRate$series_title)
